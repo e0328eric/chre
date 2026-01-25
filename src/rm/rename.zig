@@ -20,7 +20,7 @@ pub fn rename(
         new_subpath,
         io,
     ) catch |err| switch (err) {
-        error.RenameAcrossMountPoints => try renameAcrossMountPoints(
+        error.CrossDevice => try renameAcrossMountPoints(
             io,
             allocator,
             old_dir,
@@ -39,7 +39,7 @@ pub fn renameAbsolute(
     new_path: []const u8,
 ) !void {
     Io.Dir.renameAbsolute(old_path, new_path, io) catch |err| switch (err) {
-        error.RenameAcrossMountPoints => try renameAbsoluteAcrossMountPoints(
+        error.CrossDevice => try renameAbsoluteAcrossMountPoints(
             io,
             allocator,
             old_path,

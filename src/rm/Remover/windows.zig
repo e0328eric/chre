@@ -131,13 +131,13 @@ fn delete(self: Self) !void {
 
 fn deletePermanently(self: Self) !void {
     if (self.file_contents.len == 0) {
-        const msg_fmt = ansi.warn ++ "Warn: " ++
-            ansi.reset ++ "Are you sure to empty the trashbin? (y/N): ";
-        const really_msg_fmt = ansi.warn ++ "Warn: " ++
-            ansi.reset ++ "Are you " ++ ansi.bold ++ "really" ++
-            ansi.reset ++ " sure to empty the trashbin? (y/N): ";
-        if (!(try handleYesNo(self.io, msg_fmt, .{}))) return;
-        if (!(try handleYesNo(self.io, really_msg_fmt, .{}))) return;
+        //const msg_fmt = ansi.warn ++ "Warn: " ++
+        //    ansi.reset ++ "Are you sure to empty the trashbin? (y/N): ";
+        //const really_msg_fmt = ansi.warn ++ "Warn: " ++
+        //    ansi.reset ++ "Are you " ++ ansi.bold ++ "really" ++
+        //    ansi.reset ++ " sure to empty the trashbin? (y/N): ";
+        //if (!(try handleYesNo(self.io, msg_fmt, .{}))) return;
+        //if (!(try handleYesNo(self.io, really_msg_fmt, .{}))) return;
 
         //const dw_flag = win.SHERB_NOCONFIRMATION | win.SHERB_NOSOUND;
         if (win.FAILED(win.SHEmptyRecycleBinW(null, null, 0))) {

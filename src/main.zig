@@ -12,7 +12,7 @@ const Remover = switch (builtin.os.tag) {
     .linux, .macos => @import("./rm/Remover/posix.zig"),
     else => @compileError("only linux, macos and windows are supported"),
 };
-const Zlap = zlap.Zlap(@embedFile("./xilo_commands.zlap"), null);
+const Zlap = zlap.Zlap(@embedFile("./commands.zlap"), null);
 
 pub fn main(init: std.process.Init) !void {
     const allocator = init.arena.allocator();

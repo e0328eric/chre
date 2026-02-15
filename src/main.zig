@@ -25,6 +25,7 @@ pub fn main(init: std.process.Init) !void {
         var buf: [1024]u8 = undefined;
         var stdout = Io.File.stdout().writer(io, &buf);
         try stdout.interface.print("{s}\n", .{zlap_cmd.help_msg});
+        try stdout.interface.flush(); // do not forget to flush!
         return;
     }
 

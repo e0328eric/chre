@@ -14,14 +14,14 @@ const isAbsolute = fs.path.isAbsolute;
 const parseBytes = @import("../space_shower.zig").parseBytes;
 const handleYesNo = @import("../input_handler.zig").handleYesNo;
 
-const custom_trashbin_path = @import("xilo_build").custom_trashbin_path;
+const custom_trashbin_path = @import("chre_build").custom_trashbin_path;
 
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const Environ = process.Environ;
 const Io = std.Io;
 
-const XiloError = error{
+const ChreError = error{
     TryToRemoveDirectoryWithoutRecursiveFlag,
 };
 
@@ -219,7 +219,7 @@ fn getTrashbinPath(allocator: Allocator, environ: Environ) !ArrayList(u8) {
                 const home_dir = try environ.getAlloc(allocator, "HOME");
                 defer allocator.free(home_dir);
                 try output.appendSlice(allocator, home_dir);
-                try output.appendSlice(allocator, "/.cache/xilo");
+                try output.appendSlice(allocator, "/.cache/chre");
             },
             .macos => {
                 const home_dir = try environ.getAlloc(allocator, "HOME");

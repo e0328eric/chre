@@ -28,7 +28,7 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
 
-    const subcmds = .{ "ln", "rm" };
+    const subcmds = .{ "ln", "rm", "wallp" };
     inline for (subcmds) |subcmd_str| {
         if (zlap_cmd.isSubcmdActive(subcmd_str)) {
             const subcmd = zlap_cmd.active_subcmd.?;
@@ -59,6 +59,33 @@ fn lnStep(
     const dest = ln_subcmd.args.get("DEST").?.value.string;
 
     try @import("./ln/ln.zig").ln(io, source, dest);
+}
+
+fn wallpStep(
+    allocator: Allocator,
+    io: Io,
+    environ: Environ,
+    wallp_subcmd: *const zlap.Subcmd,
+) !void {
+    _ = environ;
+
+    if (builtin.os.tag == .windows) {
+        const monitor = wallp_subcmd.args.get("MONITOR").?.value.number;
+        const wallpaper_path = wallp_subcmd.args.get("PATH").?.value.string;
+        const print_list = wallp_subcmd.flags.get("list").?.value.bool;
+
+        std.debug.assert(monitor >= 0);
+
+        try @import("./wallp/wallp.zig").wallp(
+            allocator,
+            io,
+            @intCast(monitor),
+            wallpaper_path,
+            print_list,
+        );
+    } else {
+        std.debug.print("WARN: this command works only on windows\n", .{});
+    }
 }
 
 fn rmStep(

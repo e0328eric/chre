@@ -1,8 +1,8 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const XILO_VERSION_STR = @import("build.zig.zon").version;
-const XILO_VERSION = std.SemanticVersion.parse(XILO_VERSION_STR) catch unreachable;
+const CHRE_VERSION_STR = @import("build.zig.zon").version;
+const CHRE_VERSION = std.SemanticVersion.parse(CHRE_VERSION_STR) catch unreachable;
 const MIN_ZIG_STRING = @import("build.zig.zon").minimum_zig_version;
 const PROGRAM_NAME = @tagName(@import("build.zig.zon").name);
 
@@ -58,13 +58,17 @@ pub fn build(b: *Build) !void {
             .{ .name = "windows", .module = win_zig },
         },
     });
-    exe_mod.addOptions("xilo_build", exe_options);
+    if (target.result.os.tag == .windows) {
+        exe_mod.linkSystemLibrary("user32", .{});
+        exe_mod.linkSystemLibrary("ole32", .{});
+    }
+    exe_mod.addOptions("chre_build", exe_options);
 
     const exe = b.addExecutable(
         .{
             .name = PROGRAM_NAME,
             .root_module = exe_mod,
-            .version = XILO_VERSION,
+            .version = CHRE_VERSION,
         },
     );
     b.installArtifact(exe);
@@ -122,7 +126,11 @@ pub fn build(b: *Build) !void {
                 },
             }),
         });
-        release_exe.root_module.addOptions("xilo_build", exe_options);
+        if (cross_target.result.os.tag == .windows) {
+            release_exe.root_module.linkSystemLibrary("user32", .{});
+            release_exe.root_module.linkSystemLibrary("ole32", .{});
+        }
+        release_exe.root_module.addOptions("chre_build", exe_options);
 
         const target_output = b.addInstallArtifact(release_exe, .{
             .dest_dir = .{

@@ -8,7 +8,6 @@ const mem = std.mem;
 const time = std.time;
 const unicode = std.unicode;
 
-const addNullByte = std.cstr.addNullByte;
 const isAbsolute = fs.path.isAbsolute;
 const parseBytes = @import("../space_shower.zig").parseBytes;
 const handleYesNo = @import("../input_handler.zig").handleYesNo;
@@ -17,7 +16,7 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const Io = std.Io;
 
-const XiloError = error{
+const ChreError = error{
     TryToRemoveDirectoryWithoutRecursiveFlag,
     FailedToRemoveFile,
     FailedToEmptyTrashbin,

@@ -15,6 +15,7 @@
 
 #wallp | Wallpaper changer for windows {
     *MONITOR := 0 | monitor number;
-    *PATH := @null | wallpaper path;
-    -list, := @false | show monitor list;
+    *PATH    := @null | wallpaper path;
+    -list,   := @false | show monitor list;
+    -suffle, := @null | suffle wallpapers with images from given directory;
 }

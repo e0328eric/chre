@@ -4,6 +4,7 @@ const ansi = @import("../ansi.zig");
 const unicode = std.unicode;
 
 const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayList;
 const Io = std.Io;
 
 const ERROR = ansi.@"error" ++ "Error: " ++ ansi.reset;
@@ -86,6 +87,7 @@ pub fn wallp(
     monitor: usize,
     wallp_path: []const u8,
     print_list: bool,
+    suffle_dir_path: []const u8,
 ) !void {
     const dm = try DesktopManager.init(allocator);
     defer dm.deinit(allocator);
@@ -101,26 +103,84 @@ pub fn wallp(
 
             std.debug.print("{}: {s}\n", .{ i, monitor_str });
         }
+    } else if (suffle_dir_path.len > 0) {
+        var suffle_dir = try Io.Dir.openDir(.cwd(), io, suffle_dir_path, .{
+            .access_sub_paths = false,
+            .iterate = true,
+            .follow_symlinks = false,
+        });
+        defer suffle_dir.close(io);
+
+        var wallpapers = try ArrayList([]const u8).initCapacity(allocator, 10);
+        defer {
+            for (wallpapers.items) |wallpaper| allocator.free(wallpaper);
+            wallpapers.deinit(allocator);
+        }
+
+        // collect all wallpaper images
+        var suffle_dir_iter = suffle_dir.iterate();
+        while (try suffle_dir_iter.next(io)) |entry| {
+            if (entry.kind != .file) continue;
+            if (!isImage(entry.name)) continue;
+
+            const wallpaper = try allocator.alloc(u8, entry.name.len);
+            errdefer allocator.free(wallpaper);
+            @memcpy(wallpaper, entry.name);
+            try wallpapers.append(allocator, wallpaper);
+        }
+
+        // generate ChaCha seed from OS
+        var secret_seed: [std.Random.ChaCha.secret_seed_length]u8 = undefined;
+        io.random(&secret_seed);
+
+        for (0..dm.monitors_len) |mon| {
+            var chacha = std.Random.ChaCha.init(secret_seed);
+            const random = chacha.random();
+            const idx = random.intRangeAtMost(usize, 0, wallpapers.items.len);
+            try changeWallpaper(&dm, allocator, io, mon, suffle_dir, wallpapers.items[idx]);
+        }
     } else {
         // change monitor wallpaper
-        const wallpaper_utf8 = try Io.Dir.realPathFileAlloc(.cwd(), io, wallp_path, allocator);
-        defer allocator.free(wallpaper_utf8);
-        const wallpaper = try unicode.utf8ToUtf16LeAllocZ(allocator, wallpaper_utf8);
-        defer allocator.free(wallpaper);
-
-        if (monitor >= dm.monitors_len) {
-            std.debug.print(ERROR ++ "monitor number is too big\n", .{});
-            return error.WallpFailed;
-        }
-
-        const hr = dm.inner.lpVtbl.*.SetWallpaper.?(
-            @ptrCast(dm.inner),
-            @ptrCast(dm.monitors[monitor]),
-            @ptrCast(wallpaper),
-        );
-        if (win.FAILED(hr)) {
-            std.debug.print(ERROR ++ "failed to change wallpaper\n", .{});
-            return error.WallpFailed;
-        }
+        try changeWallpaper(&dm, allocator, io, monitor, .cwd(), wallp_path);
     }
+}
+
+fn changeWallpaper(
+    dm: *const DesktopManager,
+    allocator: Allocator,
+    io: Io,
+    monitor: usize,
+    image_dir: Io.Dir,
+    image_path: []const u8,
+) !void {
+    const wallpaper_utf8 = try Io.Dir.realPathFileAlloc(image_dir, io, image_path, allocator);
+    defer allocator.free(wallpaper_utf8);
+    const wallpaper = try unicode.utf8ToUtf16LeAllocZ(allocator, wallpaper_utf8);
+    defer allocator.free(wallpaper);
+
+    if (monitor >= dm.monitors_len) {
+        std.debug.print(ERROR ++ "monitor number is too big\n", .{});
+        return error.WallpFailed;
+    }
+
+    const hr = dm.inner.lpVtbl.*.SetWallpaper.?(
+        @ptrCast(dm.inner),
+        @ptrCast(dm.monitors[monitor]),
+        @ptrCast(wallpaper),
+    );
+    if (win.FAILED(hr)) {
+        std.debug.print(ERROR ++ "failed to change wallpaper\n", .{});
+        return error.WallpFailed;
+    }
+}
+
+const IMAGE_EXTENSIONS = std.StaticStringMap(void).initComptime(.{
+    .{".png"},
+    .{".jpg"},
+    .{".jpeg"},
+    // .{ ".webp" }, // does windows can change webp image for wallpaper?
+});
+
+inline fn isImage(filename: []const u8) bool {
+    return IMAGE_EXTENSIONS.has(std.fs.path.extension(filename));
 }

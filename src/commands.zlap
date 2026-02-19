@@ -19,3 +19,4 @@
     -list,   := @false | show monitor list;
     -suffle, := @null | suffle wallpapers with images from given directory;
 }
+

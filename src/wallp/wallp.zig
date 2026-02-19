@@ -132,9 +132,9 @@ pub fn wallp(
         // generate ChaCha seed from OS
         var secret_seed: [std.Random.ChaCha.secret_seed_length]u8 = undefined;
         io.random(&secret_seed);
+        var chacha = std.Random.ChaCha.init(secret_seed);
 
         for (0..dm.monitors_len) |mon| {
-            var chacha = std.Random.ChaCha.init(secret_seed);
             const random = chacha.random();
             const idx = random.intRangeAtMost(usize, 0, wallpapers.items.len);
             try changeWallpaper(&dm, allocator, io, mon, suffle_dir, wallpapers.items[idx]);

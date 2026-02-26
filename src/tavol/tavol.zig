@@ -158,6 +158,9 @@ fn decryptFile(
         i += 1;
     }
 
+    // do not forget to flush
+    try plaintext.interface.flush();
+
     const to_drop_bytes: u64 = @intCast(i * 128 -| padding_bytes);
     try plaintext_file.setLength(io, to_drop_bytes);
 }

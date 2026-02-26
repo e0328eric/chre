@@ -20,3 +20,10 @@
     -suffle, := @null | suffle wallpapers with images from given directory;
 }
 
+#tavol | Encrypt / Decrypt files {
+    *KEY: string    | key to encrypt;
+    *INPUT: string  | input filename;
+    *OUTPUT: string | output filename;
+    -encrypt,e := @true  | Encrypt file;
+    -decrypt,d := @false | Decrypt file;
+}

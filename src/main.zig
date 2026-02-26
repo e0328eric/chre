@@ -29,7 +29,7 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
 
-    const subcmds = .{ "ln", "rm", "wallp" };
+    const subcmds = .{ "ln", "rm", "wallp", "tavol" };
     inline for (subcmds) |subcmd_str| {
         if (zlap_cmd.isSubcmdActive(subcmd_str)) {
             const subcmd = zlap_cmd.active_subcmd.?;
@@ -89,6 +89,31 @@ fn wallpStep(
         wallpaper_path,
         print_list,
         suffle_dir,
+    );
+}
+
+fn tavolStep(
+    allocator: Allocator,
+    io: Io,
+    environ: Environ,
+    tavol_subcmd: *const zlap.Subcmd,
+) !void {
+    _ = allocator;
+    _ = environ;
+
+    const key = tavol_subcmd.args.get("KEY").?.value.string;
+    const input = tavol_subcmd.args.get("INPUT").?.value.string;
+    const output = tavol_subcmd.args.get("OUTPUT").?.value.string;
+    const encrypt = tavol_subcmd.flags.get("encrypt").?.value.bool;
+    const decrypt = tavol_subcmd.flags.get("decrypt").?.value.bool;
+
+    try @import("./tavol/tavol.zig").tavol(
+        io,
+        key,
+        input,
+        output,
+        encrypt,
+        decrypt,
     );
 }
 

@@ -253,7 +253,7 @@ fn nameMangling(
     );
     var base64_buf: [@bitSizeOf(u64)]u8 = undefined;
 
-    const timestamp = try Io.Clock.real.now(self.io);
+    const timestamp = Io.Clock.real.now(self.io);
     const path_hash = try fmt.allocPrint(self.allocator, "{d}|{d}", .{
         timestamp.toMilliseconds(),
         hashString(filename),

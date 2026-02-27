@@ -71,7 +71,8 @@ fn wallpStep(
     _ = environ;
 
     if (builtin.os.tag != .windows) {
-        std.debug.print("WARN: this command works only on windows\n", .{});
+        std.debug.print(ansi.warn ++ "Warn: " ++ ansi.reset ++
+            "this command works only on windows\n", .{});
         return;
     }
 
